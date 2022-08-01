@@ -1,16 +1,34 @@
-from matplotlib import pyplot
 import numpy as np
 import math
 
-def wn(k, h, T, error):
+def wn_shallow(h, w):
     '''
-    wn() recursively calculates wavelength using Newton-Rhapsom method
+    wn_shallow() returns shallow water approximation of wave number
 
-    L   (float): init wavelength guess
+    h: water depth
+    w: angular frequency
+    '''
+    return w / math.sqrt(9.81 * h)
+
+def wn(k, h, w, error):
+    '''
+    wn() recursively calculates and returns wave number using Newton-Rhapsom method
+
+    k   (float): init wavenumber guess
     h   (float): water depth
-    T   (float): period
+    w   (float): angular frequency
     '''
-
+    th = np.tanh(k * h)
+    sh = 1 / np.cosh(k * h)
+    num = (9.81 * k * th - w * w)
+    den = (9.81) * (th + k * h * sh * sh)
+    k_next = k - num / den
+    
+    if abs(k_next - k) <= error: 
+        return k
+    else: 
+        return wn(k_next, h, w, error)
+        
 
 def reflection(eta1, eta2, dl, dt, h, **kwargs):
     '''
@@ -53,10 +71,22 @@ def reflection(eta1, eta2, dl, dt, h, **kwargs):
     #   initial guess is from a shallow water approximation
     k = np.zeros(int(n / 2))
     for i in range(1, int(n / 2)):
-        k[i] = 2*np.pi / wn(2 * np.pi / (math.sqrt(9.8 * h) / (n * dt / i)), h, n * dt / i)
+        k[i] = 'meep'
 
 def main():
-    print("running main() waveref.py")
+    w = 2 * np.pi / 10.00
+    h = 8
+    k = w*w/9.81*pow(pow(1/np.tanh(w*math.sqrt(h/9.81)), (3/2)),(2/3))
+    print("fenten's k {:f}".format(k))
+
+    print("testing wn_shallow()")
+    k = wn_shallow(h, w)
+    print("wn_shallow is {:f}".format(k))
+
+    print("testing wn() with error 0.00000001")
+    error = 0.00000001
+    k = wn(k, h, w, error)
+    print("wn() is {:f}".format(k))
 
 if __name__ == '__main__':
     main()
