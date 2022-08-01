@@ -14,19 +14,20 @@ def wn(k, h, w, error):
     '''
     wn() recursively calculates and returns wave number using Newton-Rhapsom method
 
-    k   (float): init wavenumber guess
-    h   (float): water depth
-    w   (float): angular frequency
+    k       (float): init wavenumber guess
+    h       (float): water depth
+    w       (float): angular frequency
+    error   (float): margin of between guesses
     '''
-    th = np.tanh(k * h)
-    sh = 1 / np.cosh(k * h)
-    num = (9.81 * k * th - w * w)
-    den = (9.81) * (th + k * h * sh * sh)
+    th = np.tanh(k * h)                     # encaps tanh operations
+    sh = 1 / np.cosh(k * h)                 # encaps sech operations
+    num = (9.81 * k * th - w ** 2)          # numerator
+    den = (9.81) * (th + k * h * sh ** 2)   # denominator 
     k_next = k - num / den
     
-    if abs(k_next - k) <= error: 
+    if abs(k_next - k) <= error:    # base case:
         return k
-    else: 
+    else:                           # recursive case:
         return wn(k_next, h, w, error)
         
 
@@ -34,10 +35,10 @@ def reflection(eta1, eta2, dl, dt, h, **kwargs):
     '''
     reflection() returns reflection statistics given two eta time series
 
-    eta1 (numpy.array): time series for eta at x1
-    eta2 (numpy.array): time series for eta at x2
-    dl         (float): distance between x1, x2
-    h    (numpy.array): water depth
+    eta1    (numpy.array): time series for eta at x1
+    eta2    (numpy.array): time series for eta at x2
+    dl      (float): distance between x1, x2
+    h       (float): water depth
     '''
 
     n = len(eta1)       # length of time series
@@ -67,29 +68,34 @@ def reflection(eta1, eta2, dl, dt, h, **kwargs):
     B2 = np.imag(X2[0:int(n / 2)])
 
     # init k values
-    #   wn() uses Newton-Raphson Method and recursively iterates until error
+    #   wn() uses Newton-Raphson Method and recursively iterates 
+    #       until desired closeness
     #   initial guess is from a shallow water approximation
     k = np.zeros(int(n / 2))
     for i in range(1, int(n / 2)):
-        k[i] = 'meep'
+        w = 2 * np.pi * i / dt / n
+        k[i] = wn(wn_shallow(h, w), h, w, 0.000001)
+
+    # amplitude calculation
+    # equation (5) of Goda 76
+    a_i = np.zeros(int(n/2))
+    a_r = np.zeros(int(n/2))
+    for i in range(int(n/2)):
+        den = 2 * abs(np.sin(k[i] * dl))        # init denominator calculation
+        if den == 0:                            # diverging condition
+            a_i[i] = np.NaN
+            a_r[i] = np.NaN
+        else: 
+            sqr1 = A2[i] - A1[i] * np.cos(k[i] * dl) - B1[i] * np.sin(k[i] * dl)
+            sqr2 = B2[i] + A1[i] * np.sin(k[i] * dl) - B1[i] * np.cos(k[i] * dl)
+            sqr3 = A2[i] - A1[i] * np.cos(k[i] * dl) + B1[i] * np.sin(k[i] * dl) 
+            sqr4 = B2[i] - A1[i] * np.sin(k[i] * dl) - B1[i] * np.cos(k[i] * dl)
+            a_i[i] = math.sqrt(sqr1 ** 2 + sqr2 ** 2) / den
+            a_r[i] = math.sqrt(sqr3 ** 2 + sqr4 ** 2) / den
+
 
 def main():
-    w = 2 * np.pi / 10.00
-    h = 8
-    k = w*w/9.81*pow(pow(1/np.tanh(w*math.sqrt(h/9.81)), (3/2)),(2/3))
-    print("fenten's k {:f}".format(k))
-
-    print("testing wn_shallow()")
-    k = wn_shallow(h, w)
-    print("wn_shallow is {:f}".format(k))
-
-    print("testing wn() with error 0.00000001")
-    error = 0.00000001
-    k = wn(k, h, w, error)
-    print("wn() is {:f}".format(k))
+    print("waveref.py main() invoked")
 
 if __name__ == '__main__':
     main()
-        
-
-
