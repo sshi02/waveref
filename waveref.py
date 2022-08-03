@@ -1,5 +1,6 @@
 import numpy as np
 import math
+from matplotlib import pyplot as plt
 
 def wn_shallow(h, w):
     '''
@@ -63,8 +64,8 @@ def reflection(eta1, eta2, dl, dt, h, **kwargs):
     #   (small time reading tells me it has to do
     #   with Nyquist Frequencies? unsure if correct)
     A1 = np.real(X1[0:int(n / 2)])
-    B1 = np.real(X1[0:int(n / 2)])
-    A2 = np.imag(X2[0:int(n / 2)])
+    B1 = np.imag(X1[0:int(n / 2)])
+    A2 = np.real(X2[0:int(n / 2)])
     B2 = np.imag(X2[0:int(n / 2)])
 
     # init k values
@@ -78,8 +79,8 @@ def reflection(eta1, eta2, dl, dt, h, **kwargs):
 
     # amplitude calculation
     # equation (5) of Goda 76
-    a_i = np.zeros(int(n/2))
-    a_r = np.zeros(int(n/2))
+    a_i = np.zeros((int(n/2)))
+    a_r = np.zeros((int(n/2)))
     for i in range(int(n/2)):
         den = 2 * abs(np.sin(k[i] * dl))        # init denominator calculation
         if den == 0:                            # diverging condition
@@ -89,10 +90,11 @@ def reflection(eta1, eta2, dl, dt, h, **kwargs):
             sqr1 = A2[i] - A1[i] * np.cos(k[i] * dl) - B1[i] * np.sin(k[i] * dl)
             sqr2 = B2[i] + A1[i] * np.sin(k[i] * dl) - B1[i] * np.cos(k[i] * dl)
             sqr3 = A2[i] - A1[i] * np.cos(k[i] * dl) + B1[i] * np.sin(k[i] * dl) 
-            sqr4 = B2[i] - A1[i] * np.sin(k[i] * dl) - B1[i] * np.cos(k[i] * dl)
-            a_i[i] = math.sqrt(sqr1 ** 2 + sqr2 ** 2) / den
-            a_r[i] = math.sqrt(sqr3 ** 2 + sqr4 ** 2) / den
-
+            sqr4 = B2[i] - A1[i] * np.sin(k[i] * dl) - B1[i] * np.cos(k[i] * dl) 
+            a_i[i] = np.sqrt(np.square(sqr1) + np.square(sqr2)) / den
+            a_r[i] = np.sqrt(np.square(sqr3) + np.square(sqr4)) / den  
+    
+    return (a_i, a_r)
 
 def main():
     print("waveref.py main() invoked")
