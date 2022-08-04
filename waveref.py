@@ -15,10 +15,15 @@ def wn(k, h, w, error):
     '''
     wn() recursively calculates and returns wave number using Newton-Rhapsom method
 
+    parameters
     k       (float): init wavenumber guess
     h       (float): water depth
     w       (float): angular frequency
     error   (float): margin of between guesses
+
+    return
+    a_i     (numpy.array): amplitude of incident wave as frequency series
+    a_r     (numpy.array): amplitude of reflected wave as frequency series
     '''
     th = np.tanh(k * h)                     # encaps tanh operations
     sh = 1 / np.cosh(k * h)                 # encaps sech operations
@@ -93,6 +98,10 @@ def reflection(eta1, eta2, dl, dt, h, **kwargs):
             sqr4 = B2[i] - A1[i] * np.sin(k[i] * dl) - B1[i] * np.cos(k[i] * dl) 
             a_i[i] = np.sqrt(np.square(sqr1) + np.square(sqr2)) / den
             a_r[i] = np.sqrt(np.square(sqr3) + np.square(sqr4)) / den  
+    
+    # frequency limits
+    f_min     # frequency lower bound
+    f_max     # frequency upper bound
     
     return (a_i, a_r)
 
