@@ -1,6 +1,5 @@
 import numpy as np
-import math
-from matplotlib import pyplot as plt
+from math import sqrt, ceil     # better specification -> small optimization
 
 def wn_shallow(h, w):
     '''
@@ -9,7 +8,7 @@ def wn_shallow(h, w):
     h: water depth
     w: angular frequency
     '''
-    return w / math.sqrt(9.81 * h)
+    return w / sqrt(9.81 * h)
 
 def wn(k, h, w, error):
     '''
@@ -20,10 +19,6 @@ def wn(k, h, w, error):
     h       (float): water depth
     w       (float): angular frequency
     error   (float): margin of between guesses
-
-    return
-    a_i     (numpy.array): amplitude of incident wave as frequency series
-    a_r     (numpy.array): amplitude of reflected wave as frequency series
     '''
     th = np.tanh(k * h)                     # encaps tanh operations
     sh = 1 / np.cosh(k * h)                 # encaps sech operations
@@ -41,10 +36,22 @@ def reflection(eta1, eta2, dl, dt, h, **kwargs):
     '''
     reflection() returns reflection statistics given two eta time series
 
+    parameters:
     eta1    (numpy.array): time series for eta at x1
     eta2    (numpy.array): time series for eta at x2
     dl      (float): distance between x1, x2
     h       (float): water depth
+    **kwargs:
+    f_min =     (int): minimum resolvable frequency
+    f_max =     (int): maximum resolvable frequency
+
+
+    return
+    a_i     (numpy.array): amplitude of incident wave as frequency series
+    a_r     (numpy.array): amplitude of reflected wave as frequency series
+    i_min   (int): lower array bound given bounded frequency
+    i_max   (int): upper array bound given bounded frequency
+    K_r     (float): coefficient of reflection
     '''
 
     n = len(eta1)       # length of time series
@@ -83,7 +90,7 @@ def reflection(eta1, eta2, dl, dt, h, **kwargs):
         k[i] = wn(wn_shallow(h, w), h, w, 0.000001)
 
     # amplitude calculation
-    # equation (5) of Goda 76
+    # equation (5), Goda 76
     a_i = np.zeros((int(n/2)))
     a_r = np.zeros((int(n/2)))
     for i in range(int(n/2)):
@@ -100,10 +107,30 @@ def reflection(eta1, eta2, dl, dt, h, **kwargs):
             a_r[i] = np.sqrt(np.square(sqr3) + np.square(sqr4)) / den  
     
     # frequency limits
-    f_min     # frequency lower bound
-    f_max     # frequency upper bound
+    #   equation (7), Goda 76
+    if 'f_min' in kwargs:               # lower bound
+        f_min = float(kwargs.get('f_min'))
+    else: 
+        f_min = 0.05 
+    if 'f_max' in kwargs:               # upper bound
+        f_max = float(kwargs.get('f_max'))
+    else:
+        f_max = 0.45
+
+    # array limits
+    i_min = int(ceil(f_min * n / dt))       # lower bound
+    i_max = int(f_max * n / dt)             # upper bound
+
+    # energy calculation, bounded by above limits
+    #   equation (8), Goda 76
+    e_i = np.sum(np.square(a_i[i_min:i_max]) / 2)
+    e_r = np.sum(np.square(a_r[i_min:i_max]) / 2)
     
-    return (a_i, a_r)
+    # coefficent of reflection calculation
+    #   equation (9), Goda 76
+    K_r = sqrt(e_i / e_r)
+
+    return (a_i, a_r, i_min, i_max, K_r)
 
 def main():
     print("waveref.py main() invoked")
