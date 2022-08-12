@@ -1,5 +1,6 @@
 import numpy as np
 from math import sqrt, ceil     # better specification -> small optimization
+import warnings
 
 def wn_shallow(h, w):
     '''
@@ -12,7 +13,8 @@ def wn_shallow(h, w):
 
 def wn(k, h, w, error):
     '''
-    wn() recursively calculates and returns wave number using Newton-Rhapsom method
+    wn() recursively calculates and returns wave number 
+    using Newton-Rhapsom method
 
     parameters
     k       (float): init wavenumber guess
@@ -20,6 +22,7 @@ def wn(k, h, w, error):
     w       (float): angular frequency
     error   (float): margin of between guesses
     '''
+    warnings.filterwarnings("ignore")       # cosh will reach some diverging condition, this is ok
     th = np.tanh(k * h)                     # encaps tanh operations
     sh = 1 / np.cosh(k * h)                 # encaps sech operations
     num = (9.81 * k * th - w ** 2)          # numerator
@@ -73,21 +76,27 @@ def reflection(eta1, eta2, dl, dt, h, **kwargs):
 
     # init A1, A2, B1, B2 by collecting sin/cos and truncating
     #   half time-series due to symmetry 
-    #   (small time reading tells me it has to do
-    #   with Nyquist Frequencies? unsure if correct)
     A1 = np.real(X1[0:int(n / 2)])
     B1 = np.imag(X1[0:int(n / 2)])
     A2 = np.real(X2[0:int(n / 2)])
     B2 = np.imag(X2[0:int(n / 2)])
 
+    # from matplotlib import pyplot as plt
+    # plt.figure()
+    # plt.plot(range(0, n), X1, "r-")
+    # plt.savefig('nontrucated.png')
+
+
     # init k values
-    #   wn() uses Newton-Raphson Method and recursively iterates 
+    #   wn() uses Newton-Raphson Method and     recursively iterates 
     #       until desired closeness
     #   initial guess is from a shallow water approximation
     k = np.zeros(int(n / 2))
+    w = np.zeros(int(n / 2))
     for i in range(1, int(n / 2)):
-        w = 2 * np.pi * i / dt / n
-        k[i] = wn(wn_shallow(h, w), h, w, 0.000001)
+        w[i] = 2 * np.pi * i / dt / n
+        k[i] = wn(wn_shallow(h, w[i]), h, w[i], 0.00001)
+        #k[i] = w*w/9.81*pow(pow(1/np.tanh(w*sqrt(h/9.81)), (3/2)),(2/3)) # fentons approximation
 
     # amplitude calculation
     # equation (5), Goda 76
@@ -103,8 +112,8 @@ def reflection(eta1, eta2, dl, dt, h, **kwargs):
             sqr2 = B2[i] + A1[i] * np.sin(k[i] * dl) - B1[i] * np.cos(k[i] * dl)
             sqr3 = A2[i] - A1[i] * np.cos(k[i] * dl) + B1[i] * np.sin(k[i] * dl) 
             sqr4 = B2[i] - A1[i] * np.sin(k[i] * dl) - B1[i] * np.cos(k[i] * dl) 
-            a_i[i] = np.sqrt(np.square(sqr1) + np.square(sqr2)) / den
-            a_r[i] = np.sqrt(np.square(sqr3) + np.square(sqr4)) / den  
+            a_r[i] = np.sqrt(np.square(sqr1) + np.square(sqr2)) / den
+            a_i[i] = np.sqrt(np.square(sqr3) + np.square(sqr4)) / den  
     
     # frequency limits
     #   equation (7), Goda 76
@@ -118,17 +127,17 @@ def reflection(eta1, eta2, dl, dt, h, **kwargs):
         f_max = 0.45
 
     # array limits
-    i_min = int(ceil(f_min * n / dt))       # lower bound
-    i_max = int(f_max * n / dt)             # upper bound
+    i_min = int(ceil(f_min * n * dt))       # lower bound
+    i_max = int(f_max * n * dt)             # upper bound
 
     # energy calculation, bounded by above limits
     #   equation (8), Goda 76
-    e_i = np.sum(np.square(a_i[i_min:i_max]) / 2)
-    e_r = np.sum(np.square(a_r[i_min:i_max]) / 2)
+    e_i = np.sum(np.square(w[i_min:i_max]) * np.square(a_i[i_min:i_max]) / 2)
+    e_r = np.sum(np.square(w[i_min:i_max]) * np.square(a_r[i_min:i_max]) / 2)
     
     # coefficent of reflection calculation
     #   equation (9), Goda 76
-    K_r = sqrt(e_i / e_r)
+    K_r = sqrt(e_r / e_i)
 
     return (a_i, a_r, i_min, i_max, K_r)
 
