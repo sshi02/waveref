@@ -78,8 +78,8 @@ print("---")
 print("test2: reflection() standing wave from data")
 print("test2 parameters")
 
-dl = 10
-dt = 0.5
+dl = 20
+dt = 0.1
 h = 8
 
 print("water depth: {:f}".format(h))
@@ -91,7 +91,7 @@ with open('./wall_case/sta_0001', 'r') as file:
     eta1 = eta1[:,1]
 with open('./wall_case/sta_0002', 'r') as file:
     eta2 = np.loadtxt(file)
-    eta2 = eta2[:,2]
+    eta2 = eta2[:,1]
 
 print("-")
 
@@ -99,6 +99,14 @@ print("-")
 
 print("calculated coefficent of reflection: {:f}".format(K_r))
 print("---")
+
+fig = plt.figure()
+plt.subplot(1, 2, 1)
+plt.plot(range(i_min, i_max), a_i[i_min:i_max], "r-")
+plt.subplot(1, 2, 2)
+plt.plot(range(i_min, i_max), a_r[i_min:i_max])
+
+plt.savefig('reflection_test2.png')
 
 print("test3: reflection() 10 degree slope from data")
 print("test3 parameters")
@@ -116,7 +124,7 @@ with open('./10slope_case/sta_0001', 'r') as file:
     eta1 = eta1[:,1]
 with open('./10slope_case/sta_0002', 'r') as file:
     eta2 = np.loadtxt(file)
-    eta2 = eta2[:,2]
+    eta2 = eta2[:,1]
 
 print("---")
 
@@ -124,6 +132,13 @@ print("---")
 
 print("calculated coefficent of reflection: {:f}".format(K_r))
 print("---")
+
+fig = plt.figure()
+plt.subplot(1, 2, 1)
+plt.plot(range(i_min, i_max), a_i[i_min:i_max], "r-")
+plt.subplot(1, 2, 2)
+plt.plot(range(i_min, i_max), a_r[i_min:i_max])
+plt.savefig('reflection_test3.png')
 
 print("test4: reflection() standing wave test")
 print("test4 parameters")
@@ -169,4 +184,38 @@ plt.subplot(1, 2, 2)
 plt.plot(range(0, 1800), a_r)
 
 plt.savefig('reflection_test4.png')
+
+print("test5: reflection() solitary wave wall collision from data")
+print("test5 parameters")
+
+dl = 10
+dt = 0.1
+h = 8
+
+print("water depth: {:f}".format(h))
+print("gauge distance: {:f}".format(dl))
+print("reading in station data solitary_case")
+
+with open('./solitary_case/sta_0001', 'r') as file:
+    eta1 = np.loadtxt(file)
+    eta1 = eta1[:,1]
+with open('./solitary_case/sta_0002', 'r') as file:
+    eta2 = np.loadtxt(file)
+    eta2 = eta2[:,1]
+
+print("---")
+
+(a_i, a_r, i_min, i_max, K_r) = waveref.reflection(eta1, eta2, dl, dt, h)
+
+print("calculated coefficent of reflection: {:f}".format(K_r))
+print("---")
+
+fig = plt.figure()
+plt.subplot(1, 2, 1)
+plt.plot(range(i_min, i_max), a_i[i_min:i_max], "r-")
+plt.subplot(1, 2, 2)
+plt.plot(range(i_min, i_max), a_r[i_min:i_max])
+plt.savefig('reflection_test5.png')
+
+
 
