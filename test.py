@@ -62,7 +62,7 @@ print("incident wave height: {:f}".format(h1))
 print("reflected wave height: {:f}".format(h2))
 print("-")
 
-(a_i, a_r, i_min, i_max, K_r) = waveref.reflection(eta[0], eta[1], dl, dt, h)
+(a_i, a_r, i_min, i_max, e_i, e_r, K_r) = waveref.reflection(eta[0], eta[1], dl, dt, h)
 
 print("calculated coefficent of reflection: {:f}".format(K_r))
 
@@ -128,7 +128,7 @@ with open('./10slope_case/sta_0002', 'r') as file:
 
 print("---")
 
-(a_i, a_r, i_min, i_max, K_r) = waveref.reflection(eta1, eta2, dl, dt, h)
+(a_i, a_r, i_min, i_max, e_i, e_r, K_r) = waveref.reflection(eta1, eta2, dl, dt, h)
 
 print("calculated coefficent of reflection: {:f}".format(K_r))
 print("---")
@@ -171,7 +171,7 @@ print("incident wave height: {:f}".format(h1))
 print("reflected wave height: {:f}".format(h2))
 print("-")
 
-(a_i, a_r, i_min, i_max, K_r) = waveref.reflection(eta[0], eta[1], dl, dt, h)
+(a_i, a_r, i_min, i_max, e_i, e_r, K_r) = waveref.reflection(eta[0], eta[1], dl, dt, h)
 
 print("calculated coefficent of reflection: {:f}".format(K_r))
 
@@ -205,7 +205,7 @@ with open('./solitary_case/sta_0002', 'r') as file:
 
 print("---")
 
-(a_i, a_r, i_min, i_max, K_r) = waveref.reflection(eta1, eta2, dl, dt, h)
+(a_i, a_r, i_min, i_max, e_i, e_r, K_r) = waveref.reflection(eta1, eta2, dl, dt, h)
 
 print("calculated coefficent of reflection: {:f}".format(K_r))
 print("---")

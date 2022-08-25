@@ -55,6 +55,8 @@ def reflection(eta1, eta2, dl, dt, h, **kwargs):
     a_r     (numpy.array): amplitude of reflected wave as frequency series
     i_min   (int): lower array bound given bounded frequency
     i_max   (int): upper array bound given bounded frequency
+    e_i     (float): energy of incident wave
+    e_r     (float): energy of reflected wave
     K_r     (float): coefficient of reflection
     '''
 
