@@ -57,3 +57,5 @@ wn() recursively calculates and returns wave number using Newton-Rhapsom method
 - w     (float): angular frequency
 - error (float): margin between guesses
 - c     (float): recursive counter (usually set to 0)
+#### return
+- k     (float): wavenumber
