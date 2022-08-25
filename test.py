@@ -22,7 +22,7 @@ print("---")
 
 error = 0.000001
 print("testing wn() with error {:f}".format(error))
-k = waveref.wn(k, h, w, error)
+k = waveref.wn(k, h, w, error, 0)
 print("wn() is {:f}".format(k))
 print("---")
 

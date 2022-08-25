@@ -1,6 +1,6 @@
 import numpy as np
 from math import sqrt, ceil     # better specification -> small optimization
-import warnings
+import warnings, sys
 
 def wn_shallow(h, w):
     '''
@@ -11,7 +11,7 @@ def wn_shallow(h, w):
     '''
     return w / sqrt(9.81 * h)
 
-def wn(k, h, w, error):
+def wn(k, h, w, error, c):
     '''
     wn() recursively calculates and returns wave number 
     using Newton-Rhapsom method
@@ -28,11 +28,12 @@ def wn(k, h, w, error):
     num = (9.81 * k * th - w ** 2)          # numerator
     den = (9.81) * (th + k * h * sh ** 2)   # denominator 
     k_next = k - num / den
+    c += c + 1
     
-    if abs(k_next - k) <= error:    # base case:
+    if c > sys.getrecursionlimit() - 1 or abs(k_next - k) <= error:    # base case:
         return k
     else:                           # recursive case:
-        return wn(k_next, h, w, error)
+        return wn(k_next, h, w, error, c)
         
 
 def reflection(eta1, eta2, dl, dt, h, **kwargs):
@@ -95,7 +96,7 @@ def reflection(eta1, eta2, dl, dt, h, **kwargs):
     w = np.zeros(int(n / 2))
     for i in range(1, int(n / 2)):
         w[i] = 2 * np.pi * i / dt / n
-        k[i] = wn(wn_shallow(h, w[i]), h, w[i], 0.00001)
+        k[i] = wn(wn_shallow(h, w[i]), h, w[i], 0.00001, 0)
         #k[i] = w*w/9.81*pow(pow(1/np.tanh(w*sqrt(h/9.81)), (3/2)),(2/3)) # fentons approximation
 
     # amplitude calculation
@@ -139,7 +140,7 @@ def reflection(eta1, eta2, dl, dt, h, **kwargs):
     #   equation (9), Goda 76
     K_r = sqrt(e_r / e_i)
 
-    return (a_i, a_r, i_min, i_max, K_r)
+    return (a_i, a_r, i_min, i_max, e_i, e_r, K_r)
 
 def main():
     print("waveref.py main() invoked")
